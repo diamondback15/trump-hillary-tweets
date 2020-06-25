@@ -1,64 +1,106 @@
 import Head from 'next/head'
+import React, { useEffect, useState } from 'react'
+import { connect } from 'react-redux'
+import { getTrumpTweets, getHillaryTweets } from '../redux/actions/feedActions'
+import { bindActionCreators } from 'redux'
+import styled from 'styled-components'
+import Footer from '../components/footer'
 
-export default function Home() {
+const S = {}
+
+S.ButtonGroup = styled.div`
+   margin-top: 2rem;
+   background: transparent;
+   border: none;
+`
+
+S.ButtonTrump = styled.button`
+  border-radius: 100px;
+  font-size: 18px;
+  padding: 10px 20px;
+  border: none;
+  background: red;
+  color: white;
+  margin: .5rem;
+`
+
+S.ButtonHillary = styled.button`
+  border-radius: 100px;
+  font-size: 18px;
+  padding: 10px 20px;
+  border: none;
+  background: blue;
+  color: white;
+  margin: .5rem;
+`
+
+S.Row = styled.div`
+  display: grid;
+`
+
+S.Col = styled.div`
+  padding: 1rem 2rem;
+  margin: 10px;
+  border-radius: 10px;
+  max-width: 500px;
+`
+
+S.Tweets = styled.div`
+  padding: 1rem 1.2rem;
+  background: #eee;
+  margin-bottom: 1rem;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  border-radius: 5px;
+`
+
+S.Main = styled.main`
+  text-align: center;
+`
+
+const Index = props => {
+  const [toggleTrumpHillary, setToggleTrumpHillary] = useState(true)
+  const { trumpTweets, hillaryTweets, getTrumpTweets, getHillaryTweets } = props
+
+  useEffect(() => {
+    getTrumpTweets()
+    getHillaryTweets()
+  }, [])
+  
   return (
     <div className="container">
       <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
+        <title>Trump vs Hillary</title>
       </Head>
-
-      <main>
+      <S.Main>
         <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Trump vs Hillary
         </h1>
-
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div>
+            <S.ButtonGroup>
+              <S.ButtonTrump onClick={() => setToggleTrumpHillary(true)}>Select Trump Tweets</S.ButtonTrump>
+              <S.ButtonHillary onClick={() => setToggleTrumpHillary(false) }>Select Hillary Tweets</S.ButtonHillary>
+            </S.ButtonGroup>
+            <S.Row>
+              { toggleTrumpHillary ? (
+              <S.Col>
+                  <h2>Trump</h2>
+                  { trumpTweets?.map( val => {
+                    return <S.Tweets key={ val.id }>{val.title}</S.Tweets>
+                  }) }
+              </S.Col>
+              ) : ( 
+              <S.Col>
+                <h2>Hillary</h2>
+                { hillaryTweets?.map( val => {
+                  return <S.Tweets key={ val.id }>{val.title}</S.Tweets>
+                }) }
+              </S.Col>)}
+            </S.Row>              
         </div>
-      </main>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="logo" />
-        </a>
-      </footer>
-
+      </S.Main>
+      <Footer />
       <style jsx>{`
         .container {
           min-height: 100vh;
@@ -76,30 +118,6 @@ export default function Home() {
           flex-direction: column;
           justify-content: center;
           align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
         }
 
         .title a {
@@ -207,3 +225,18 @@ export default function Home() {
     </div>
   )
 }
+
+
+const mapStateToProps = state => ({
+  trumpTweets: state.feed.trumpTweets,
+  hillaryTweets: state.feed.hillaryTweets
+});
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({
+    getTrumpTweets,
+    getHillaryTweets
+  }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Index);
